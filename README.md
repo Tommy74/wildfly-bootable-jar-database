@@ -149,5 +149,44 @@ environment variables that you can set before starting the bootable jar;
 This is very useful because you can use the same `wildfly-bootable-jar-database-bootable.jar` and deploy it to your test,
 production, cloud etc... environment without recompiling it;
 
+# Standalone container
 
+In order to create an image that can be run with `docker` or `podman`, we are going to use as base image `docker.io/library/openjdk:11`;
+this image contains the OpenJDK 11;
+
+Build the final image with:
+
+```shell
+podman build -t wildfly-bootable-jar-database-bootable .
+```
+
+You can see the name of final image with `podman image ls`;
+
+Now, run the database container as described above;
+
+Run the image with:
+
+```shell
+podman run -d --network=host --name wildfly-bootable-jar-database-bootable \  
+  --env "POSTGRESQL_USER=postgres" \
+  --env "POSTGRESQL_PASSWORD=mysecretpassword" \
+  --env "POSTGRESQL_SERVICE_HOST=localhost" \
+  --env "POSTGRESQL_SERVICE_PORT=5432" \
+  --env "POSTGRESQL_DATABASE=postgres" \
+  --env "POSTGRESQL_DATASOURCE=PostgreSQLDS" \
+  localhost/wildfly-bootable-jar-database-bootable
+```
+
+
+
+Test it with:
+
+```shell
+curl http://localhost:18080/datasource
+schema=SYSTEM
+```
+
+> Note: You can attach to the running container like this: `podman exec -it wildfly-bootable-jar-database-bootable /bin/bash`
+
+> Note: if you want to play with the base image and inspect its content you can run: `podman run --rm -it docker.io/library/openjdk:11 /bin/bash`
 
